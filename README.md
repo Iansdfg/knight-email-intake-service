@@ -41,6 +41,7 @@ For each request, the service:
 6. Detects duplicate uploaded attachments within the same submission.
 7. Stores document inventory metadata.
 8. Returns a submission summary.
+9. Creates a case row in `public."knight-case-table"` and returns its `case_id`.
 
 Actual file bytes are stored in local disk for local development or S3 in AWS. PostgreSQL stores metadata and relationships.
 
@@ -62,10 +63,15 @@ API Gateway -> Lambda/FastAPI -> RDS PostgreSQL
 
 In the current AWS deployment:
 
-- RDS database: `knight_email_intake`
+- RDS DB instance: `knight-email-intake-db`
+- RDS endpoint: `knight-email-intake-db.c3wgqma4geuk.us-east-1.rds.amazonaws.com`
+- RDS database: `email_intake`
+- RDS username: `email_intake_user`
+- RDS security group: `sg-0feb7131c1b023d57`
 - S3 bucket: `knight-email-pool`
-- Lambda runs inside the RDS VPC.
-- An S3 Gateway VPC endpoint allows the VPC Lambda to write to S3.
+- The database currently allows PostgreSQL access from the setup client IP only for pgAdmin testing.
+- Do not commit the database password. Use shell environment variables, AWS Secrets Manager, or another secure password store.
+- For production, prefer private RDS access from Lambda through the VPC.
 
 ## Code Structure
 
@@ -137,6 +143,12 @@ Makefile                      Local/AWS build, migration, and deployment command
 - `duplicate`
 - `duplicate_of_document_id`
 - `created_at`
+
+`public."knight-case-table"`
+
+- `case_id`: primary key UUID returned to the API caller
+- `s3_location`: folder/prefix containing the submission files
+- `report_location`: generated report workbook location, currently `email_tables.xlsx` when table parsing produces a workbook
 
 ## Storage Behavior
 
@@ -234,6 +246,20 @@ See also:
 - [examples/ingest-email-request.md](examples/ingest-email-request.md)
 - [examples/ingest-email-response.json](examples/ingest-email-response.json)
 
+Successful responses include both the internal `submission_id` and the external `case_id`:
+
+```json
+{
+  "case_id": "26ddf106-c7bb-440c-9299-ff7d73c4eb81",
+  "submission_id": "e5c6b512-b0f2-4d5d-8392-f32c71ce64ad",
+  "s3_location": "s3://knight-email-pool/submissions/e5c6b512-b0f2-4d5d-8392-f32c71ce64ad/attachments/",
+  "report_location": "s3://knight-email-pool/submissions/e5c6b512-b0f2-4d5d-8392-f32c71ce64ad/attachments/email_tables.xlsx",
+  "document_count": 4,
+  "duplicate_count": 0,
+  "documents": []
+}
+```
+
 ## AWS Deployment
 
 The Lambda entry point is:
@@ -272,6 +298,37 @@ make dev
 ```
 
 Do not commit real database credentials. Use shell environment variables or a secrets manager.
+
+Current AWS RDS connection shape:
+
+```text
+postgresql+psycopg://email_intake_user:<password>@knight-email-intake-db.c3wgqma4geuk.us-east-1.rds.amazonaws.com:5432/email_intake?sslmode=require
+```
+
+For pgAdmin 4:
+
+```text
+Host: knight-email-intake-db.c3wgqma4geuk.us-east-1.rds.amazonaws.com
+Port: 5432
+Database: email_intake
+Username: email_intake_user
+```
+
+The AWS database has these public schema tables:
+
+```text
+alembic_version
+documents
+knight-case-table
+submissions
+```
+
+The case table stores the generated case ID and S3 locations:
+
+```sql
+SELECT case_id, s3_location, report_location
+FROM public."knight-case-table";
+```
 
 ## AWS Networking Notes
 
