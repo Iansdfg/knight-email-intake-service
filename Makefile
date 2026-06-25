@@ -14,6 +14,7 @@ STACK_NAME ?= knight-email-intake-service
 TEMPLATE ?= template.yaml
 S3_BUCKET ?=
 DATABASE_URL ?=
+SQS_QUEUE_URL ?=
 VPC_SUBNET_IDS ?=
 VPC_SECURITY_GROUP_IDS ?=
 SAM_BUILD_ARGS ?= --use-container
@@ -47,6 +48,7 @@ help:
 	@echo "Required for AWS deploy:"
 	@echo "  DATABASE_URL='postgresql+psycopg://user:pass@rds-endpoint:5432/email_intake?sslmode=require'"
 	@echo "  S3_BUCKET='email-intake-submissions'"
+	@echo "  SQS_QUEUE_URL='https://sqs.us-east-1.amazonaws.com/account/queue' (optional)"
 	@echo "  AWS_REGION='us-east-1'"
 	@echo ""
 	@echo "Required for private RDS deploy:"
@@ -90,7 +92,8 @@ deploy-public: check-aws-env
 		--capabilities CAPABILITY_IAM \
 		--parameter-overrides \
 			DatabaseUrl="$(DATABASE_URL)" \
-			S3Bucket="$(S3_BUCKET)"
+			S3Bucket="$(S3_BUCKET)" \
+			SqsQueueUrl="$(SQS_QUEUE_URL)"
 
 deploy-private: check-aws-env check-vpc-env
 	@$(SAM) deploy $(SAM_DEPLOY_ARGS) \
@@ -101,6 +104,7 @@ deploy-private: check-aws-env check-vpc-env
 		--parameter-overrides \
 			DatabaseUrl="$(DATABASE_URL)" \
 			S3Bucket="$(S3_BUCKET)" \
+			SqsQueueUrl="$(SQS_QUEUE_URL)" \
 			VpcSubnetIds="$(VPC_SUBNET_IDS)" \
 			VpcSecurityGroupIds="$(VPC_SECURITY_GROUP_IDS)"
 
@@ -114,6 +118,7 @@ package-info:
 	@echo "STACK_NAME=$(STACK_NAME)"
 	@echo "AWS_REGION=$(AWS_REGION)"
 	@echo "S3_BUCKET=$(S3_BUCKET)"
+	@echo "SQS_QUEUE_URL=$$(test -n "$(SQS_QUEUE_URL)" && echo '<set>' || echo '<missing>')"
 	@echo "DATABASE_URL=$$(test -n "$(DATABASE_URL)" && echo '<set>' || echo '<missing>')"
 	@echo "VPC_SUBNET_IDS=$$(test -n "$(VPC_SUBNET_IDS)" && echo '<set>' || echo '<missing>')"
 	@echo "VPC_SECURITY_GROUP_IDS=$$(test -n "$(VPC_SECURITY_GROUP_IDS)" && echo '<set>' || echo '<missing>')"

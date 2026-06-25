@@ -26,6 +26,16 @@ Use an RDS URL like:
 postgresql+psycopg://email_intake_user:PASSWORD@your-rds-endpoint.us-east-1.rds.amazonaws.com:5432/email_intake?sslmode=require
 ```
 
+Set these values for Phase 2 event publishing and acknowledgement email:
+
+```text
+SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/QUEUE_NAME
+SMTP_HOST=127.0.0.1
+SMTP_PORT=25
+SMTP_REPLY_FROM=submissions@example.com
+SMTP_REPLY_ENABLED=false
+```
+
 ## Run Migrations Against RDS
 
 Run migrations once from a machine that can reach RDS:
@@ -68,6 +78,7 @@ Deploy to private RDS:
 make deploy-private \
   DATABASE_URL='postgresql+psycopg://email_intake_user:PASSWORD@your-rds-endpoint.us-east-1.rds.amazonaws.com:5432/email_intake?sslmode=require' \
   S3_BUCKET='email-intake-submissions' \
+  SQS_QUEUE_URL='https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/QUEUE_NAME' \
   AWS_REGION='us-east-1' \
   VPC_SUBNET_IDS='subnet-abc123,subnet-def456' \
   VPC_SECURITY_GROUP_IDS='sg-abc123'
@@ -79,6 +90,7 @@ For temporary public RDS development:
 make deploy-public \
   DATABASE_URL='postgresql+psycopg://email_intake_user:PASSWORD@your-rds-endpoint.us-east-1.rds.amazonaws.com:5432/email_intake?sslmode=require' \
   S3_BUCKET='email-intake-submissions' \
+  SQS_QUEUE_URL='https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/QUEUE_NAME' \
   AWS_REGION='us-east-1'
 ```
 
@@ -91,6 +103,7 @@ sam deploy --guided \
   --parameter-overrides \
     DatabaseUrl='postgresql+psycopg://email_intake_user:PASSWORD@your-rds-endpoint.us-east-1.rds.amazonaws.com:5432/email_intake?sslmode=require' \
     S3Bucket='email-intake-submissions' \
+    SqsQueueUrl='https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/QUEUE_NAME' \
     VpcSubnetIds='subnet-abc123,subnet-def456' \
     VpcSecurityGroupIds='sg-abc123'
 ```
@@ -101,7 +114,8 @@ For a temporary public RDS development database, omit the VPC parameters:
 sam deploy --guided \
   --parameter-overrides \
     DatabaseUrl='postgresql+psycopg://email_intake_user:PASSWORD@your-rds-endpoint.us-east-1.rds.amazonaws.com:5432/email_intake?sslmode=require' \
-    S3Bucket='email-intake-submissions'
+    S3Bucket='email-intake-submissions' \
+    SqsQueueUrl='https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/QUEUE_NAME'
 ```
 
 ## Test

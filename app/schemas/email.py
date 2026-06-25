@@ -30,7 +30,5 @@ class DocumentSummary(BaseModel):
 
 
 class IngestEmailResponse(BaseModel):
-    submission_id: UUID
-    document_count: int
-    duplicate_count: int
-    documents: list[DocumentSummary]
+    case_id: UUID
+    status: str

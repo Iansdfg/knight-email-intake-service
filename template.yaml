@@ -10,6 +10,22 @@ Parameters:
   S3Bucket:
     Type: String
     Description: S3 bucket used for email attachments and generated documents.
+  SqsQueueUrl:
+    Type: String
+    Default: ""
+    Description: SQS queue URL for CASE_CREATED events. Leave blank to disable publishing.
+  SmtpHost:
+    Type: String
+    Default: "127.0.0.1"
+  SmtpPort:
+    Type: Number
+    Default: 25
+  SmtpReplyFrom:
+    Type: String
+    Default: "submissions@example.com"
+  SmtpReplyEnabled:
+    Type: String
+    Default: "false"
   VpcSubnetIds:
     Type: CommaDelimitedList
     Default: ""
@@ -35,6 +51,11 @@ Globals:
         DATABASE_URL: !Ref DatabaseUrl
         STORAGE_BACKEND: s3
         S3_BUCKET: !Ref S3Bucket
+        SQS_QUEUE_URL: !Ref SqsQueueUrl
+        SMTP_HOST: !Ref SmtpHost
+        SMTP_PORT: !Ref SmtpPort
+        SMTP_REPLY_FROM: !Ref SmtpReplyFrom
+        SMTP_REPLY_ENABLED: !Ref SmtpReplyEnabled
         ROOT_PATH: /prod
 
 Resources:
@@ -59,6 +80,17 @@ Resources:
         - AWSLambdaVPCAccessExecutionRole
         - S3WritePolicy:
             BucketName: !Ref S3Bucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:ListBucket
+              Resource: !Sub "arn:aws:s3:::${S3Bucket}"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+                - sqs:GetQueueAttributes
+              Resource: "*"
       VpcConfig: !If
         - UseVpc
         - SubnetIds: !Ref VpcSubnetIds
