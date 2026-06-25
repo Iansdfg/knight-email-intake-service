@@ -1,0 +1,71 @@
+{
+  "submission_id": "e5c6b512-b0f2-4d5d-8392-f32c71ce64ad",
+  "document_count": 4,
+  "duplicate_count": 1,
+  "documents": [
+    {
+      "id": "ecfa79f0-68a0-48f1-b89b-c1d623330b04",
+      "original_filename": "email_body.html",
+      "source": "email_body",
+      "mime_type": "text/html",
+      "file_size": 842,
+      "s3_path": "local_storage/submissions/e5c6b512-b0f2-4d5d-8392-f32c71ce64ad/attachments/email_body.html",
+      "checksum": "2f1ed002ab5595859014ebf0951522d9b575d0e0f5f7e09a1d7a6a33b263b41d",
+      "status": "stored",
+      "extension": "html",
+      "page_count": null,
+      "sheet_count": null,
+      "duplicate": false,
+      "duplicate_of_document_id": null,
+      "created_at": "2026-06-24T23:18:11.920000Z"
+    },
+    {
+      "id": "8c3a45c9-b0c8-4b4d-9cda-47de554016a1",
+      "original_filename": "acord.pdf",
+      "source": "attachment",
+      "mime_type": "application/pdf",
+      "file_size": 248192,
+      "s3_path": "local_storage/submissions/e5c6b512-b0f2-4d5d-8392-f32c71ce64ad/attachments/acord.pdf",
+      "checksum": "6f1ed002ab5595859014ebf0951522d9b575d0e0f5f7e09a1d7a6a33b263b41d",
+      "status": "stored",
+      "extension": "pdf",
+      "page_count": 12,
+      "sheet_count": null,
+      "duplicate": false,
+      "duplicate_of_document_id": null,
+      "created_at": "2026-06-24T23:18:12.120000Z"
+    },
+    {
+      "id": "279218bf-3189-46f7-809b-e0440388e262",
+      "original_filename": "loss-runs.xlsx",
+      "source": "attachment",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "file_size": 147880,
+      "s3_path": "local_storage/submissions/e5c6b512-b0f2-4d5d-8392-f32c71ce64ad/attachments/loss-runs.xlsx",
+      "checksum": "c7e683f91f581dbd0e4d64f9296a7dbe78ac53e070b3bc49d07c41f2d2bb7350",
+      "status": "stored",
+      "extension": "xlsx",
+      "page_count": null,
+      "sheet_count": 3,
+      "duplicate": false,
+      "duplicate_of_document_id": null,
+      "created_at": "2026-06-24T23:18:12.310000Z"
+    },
+    {
+      "id": "f3a05772-eea8-49c3-9d6c-d2b6d8c2ae4d",
+      "original_filename": "copy-of-acord.pdf",
+      "source": "attachment",
+      "mime_type": "application/pdf",
+      "file_size": 248192,
+      "s3_path": "local_storage/submissions/e5c6b512-b0f2-4d5d-8392-f32c71ce64ad/attachments/copy-of-acord.pdf",
+      "checksum": "6f1ed002ab5595859014ebf0951522d9b575d0e0f5f7e09a1d7a6a33b263b41d",
+      "status": "stored",
+      "extension": "pdf",
+      "page_count": 12,
+      "sheet_count": null,
+      "duplicate": true,
+      "duplicate_of_document_id": "8c3a45c9-b0c8-4b4d-9cda-47de554016a1",
+      "created_at": "2026-06-24T23:18:12.510000Z"
+    }
+  ]
+}

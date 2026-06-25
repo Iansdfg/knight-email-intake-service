@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Commercial Auto Email Intake Service on API Gateway and Lambda.
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: RDS PostgreSQL SQLAlchemy URL, including sslmode=require.
+  S3Bucket:
+    Type: String
+    Description: S3 bucket used for email attachments and generated documents.
+  VpcSubnetIds:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Private subnet IDs for RDS access. Leave blank only if RDS is publicly reachable.
+  VpcSecurityGroupIds:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Lambda security group IDs allowed to connect to RDS. Leave blank only if RDS is publicly reachable.
+
+Conditions:
+  UseVpc:
+    !Not [!Equals [!Join ["", !Ref VpcSubnetIds], ""]]
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures:
+      - x86_64
+    Timeout: 120
+    MemorySize: 1024
+    Environment:
+      Variables:
+        DATABASE_URL: !Ref DatabaseUrl
+        STORAGE_BACKEND: s3
+        S3_BUCKET: !Ref S3Bucket
+        ROOT_PATH: /prod
+
+Resources:
+  EmailIntakeApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      BinaryMediaTypes:
+        - multipart~1form-data
+        - application~1pdf
+        - application~1vnd.ms-excel
+        - application~1vnd.openxmlformats-officedocument.spreadsheetml.sheet
+        - image~1*
+
+  EmailIntakeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.lambda_handler.handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - S3WritePolicy:
+            BucketName: !Ref S3Bucket
+      VpcConfig: !If
+        - UseVpc
+        - SubnetIds: !Ref VpcSubnetIds
+          SecurityGroupIds: !Ref VpcSecurityGroupIds
+        - !Ref AWS::NoValue
+      Events:
+        ProxyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EmailIntakeApi
+            Path: /{proxy+}
+            Method: ANY
+        RootApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EmailIntakeApi
+            Path: /
+            Method: ANY
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway invoke URL.
+    Value: !Sub "https://${EmailIntakeApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
